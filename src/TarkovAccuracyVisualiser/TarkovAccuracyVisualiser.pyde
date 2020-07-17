@@ -13,7 +13,7 @@ sw = 50  # Threashold for displaying yellow to red
 mapColors = ('#00FF00', '#ecca00', '#2f0000')
 
 pathList = [['', 'save'], ['', 'import']]
-textFieldList = ['moa', 'distances']
+textFieldList = ['tarkov moa', 'distances']
 
 outputMessage = ''
 outputMessagePos = (230, 570)
@@ -33,7 +33,7 @@ def setup():
 	cp5 = ControlP5(this)
 	cp5.enableShortcuts()
 
-	cp5.addTextfield('moa').setPosition(20, 500).setSize(60, 25)
+	cp5.addTextfield('tarkov moa').setPosition(20, 500).setSize(60, 25)
 
 	cp5.addTextfield('distances').setPosition(100, 500).setSize(120, 25)
 
@@ -62,7 +62,7 @@ def draw(*args):
 		moa = args[0]
 		distances = args[1]
 	else:
-		moa = cp5.getController('moa').getText()
+		moa = cp5.getController('tarkov moa').getText()
 		distances = cp5.getController('distances').getText()
 
 	# MOA in game, converted to centimeters
@@ -84,7 +84,7 @@ def draw(*args):
 			distanceList = [0.5, 1, 2, 3, 4, 5]
 			break
 
-	yOffsetStep = (drawRange[1] - drawRange[0]) / (len(distanceList) + 1)
+	yOffsetStep = float(drawRange[1] - drawRange[0]) / (len(distanceList) + 1)
 
 	# For each distance (reversed for readability)
 	for j in range(len(distanceList), 0, -1):
@@ -147,7 +147,7 @@ def save(mode):
 
 	if mode == 'frame':
 		saveCurrentFrame(
-			cp5.getController('moa').getText(),
+			cp5.getController('tarkov moa').getText(),
 			cp5.getController('distances').getText(),
 			mode
 		)
@@ -191,7 +191,7 @@ def saveCurrentFrame(moa, distances, mode):
 
 	textSize(25)
 	textAlign(CENTER)
-	text('{} MOA'.format(moa), drawCenter, 70)
+	text('{} Tarkov MOA'.format(moa), drawCenter, 70)
 
 	saveName = '{}/{} MOA @ {}.png'.format(
 		pathList[0][0], moa, distances)

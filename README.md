@@ -45,6 +45,9 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 - Accommodating large MOA values
 
+- Zooming in and out
+
+
 ## Credits
 
 [Processing.Py 3](https://py.processing.org/)

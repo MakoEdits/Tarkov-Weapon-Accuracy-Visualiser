@@ -35,6 +35,13 @@ Find the relevant build in the builds directory
 ![Import Example](/examples/ImportExample.png)
 
 
+## Information
+
+Tarkov MOA is represented as radius rather than the traditional diamater format
+
+This means that the formula is: ```Tarkov MOA x 2 x 2.54``` for centimeters
+
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
@@ -46,7 +53,6 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 - Accommodating large MOA values
 
 - Zooming in and out
-
 
 ## Credits
 

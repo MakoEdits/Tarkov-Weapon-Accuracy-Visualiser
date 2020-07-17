@@ -45,6 +45,7 @@ def setup():
 
 
 # If tab pressed, set focus to opposite text field
+
 def keyPressed():
 	if keyCode == 9: # Tab
 		for field in textFieldList:
@@ -157,6 +158,8 @@ def save(mode):
 	pathList = [['', 'save'], ['', 'import']]
 
 
+# Hold program until user has selected path
+
 def waitForPath(index):
 	global pathList
 	# While user hasn't done anything
@@ -173,6 +176,7 @@ def waitForPath(index):
 
 
 # Hide UI, draw then save image, show ui
+
 def saveCurrentFrame(moa, distances, mode):
 	global outputMessage
 
@@ -205,6 +209,8 @@ def saveCurrentFrame(moa, distances, mode):
 	cp5.show()
 
 
+# Load and process json file, render each item in json
+
 def importData():
 	global outputMessage
 
@@ -234,6 +240,7 @@ def importData():
 
 
 # Set global variables to given variables. Awful
+
 def globalSavePath(newSavePath):
 	global pathList
 	pathList[0][0] = newSavePath

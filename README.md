@@ -51,7 +51,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 [controlP5](http://www.sojamo.de/libraries/controlP5/)
 
-[SW_Tower](https://www.reddit.com/user/tower299) for the template and scaling math
+[SW Tower](https://www.youtube.com/channel/UCwYEdvfGj9kesA2kiIefNJg) for the idea, template and hard math
 
 ## License
 

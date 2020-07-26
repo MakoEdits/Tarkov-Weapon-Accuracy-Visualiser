@@ -4,9 +4,13 @@ Visualise Tarkov weapon accuracy based on in game MOA values
 
 Made with Processing.Py
 
-## Usage
+## Information
 
-Find the relevant build in the builds directory
+Tarkov MOA is represented as radius rather than the traditional diamater format
+
+This means that the formula is: ```Tarkov MOA x 2``` for inches, then multiplied by 2.54 for centimeters
+
+## Usage
 
 **Enter** an MOA value based off of weapons in game. Add subsequent distance values, separated by a comma
 
@@ -35,24 +39,33 @@ Find the relevant build in the builds directory
 ![Import Example](/examples/ImportExample.png)
 
 
-## Information
+**Zoom** in and out. Zoom will be retained when saving image, including imports
 
-Tarkov MOA is represented as radius rather than the traditional diamater format
 
-This means that the formula is: ```Tarkov MOA x 2 x 2.54``` for centimeters
+![Zoom Example](/examples/ZoomExample.png)
 
 
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-## Primary Todo
+## Primary TODOS
+
+**Major:**
+
+- Allow zoom level to be specified in import
 
 - Spreading circles relative to diameter rather than uniformly
 
+- Moving circle group/moving frame
+
+**Minor:**
+
+- Toggle various text areas
+
 - Accommodating large MOA values
 
-- Zooming in and out
+- Displaying text if circle draws larger than frame
 
 ## Credits
 

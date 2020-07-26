@@ -4,75 +4,106 @@ import json
 
 add_library('controlP5')
 templateImg = 'AccuracyTemplate.png'
+imageScale = (464.0/170.0)
 
-drawRange = (30, 570)
-drawCenter = 410
-xOffsetBuffer = 105
-
-sw = 50  # Threashold for displaying yellow to red
 mapColors = ('#00FF00', '#ecca00', '#2f0000')
 
 pathList = [['', 'save'], ['', 'import']]
 textFieldList = ['tarkov moa', 'distances']
 
 outputMessage = ''
-outputMessagePos = (230, 570)
+outputMessagePos = (20, 495)
+
+zoomLevel = 1.0
+imageSize = 600
+backgroundColor = '#0b0b0b'
+
+xOffsetBuffer = 105
 
 
 def setup():
-	global cp5, templateImg
-	size(600, 600)
-	background(loadImage(templateImg))
+	global basicControls, templateImg
+	templateImg = loadImage(templateImg)
+	size(imageSize, imageSize)
+
+	background(backgroundColor)
+	image(templateImg, 0, 0)
+
 	stroke('#555555')
 	strokeWeight(2)
 
 	textSize(12)
 	textLeading(12)
-	textAlign(LEFT)
+	textAlign(CENTER)
 
-	cp5 = ControlP5(this)
-	cp5.enableShortcuts()
+	basicControls = ControlP5(this)
+	basicControls.enableShortcuts()
 
-	cp5.addTextfield('tarkov moa').setPosition(20, 500).setSize(60, 25)
+	(basicControls.addTextfield('tarkov moa')
+		.setPosition(20, 500)
+		.setSize(50, 25)
+	)
 
-	cp5.addTextfield('distances').setPosition(100, 500).setSize(120, 25)
+	(basicControls.addTextfield('distances')
+		.setPosition(80, 500)
+		.setSize(100, 25)
+	)
 
-	(cp5.addButton('save image').setPosition(15, 550).setSize(100, 35)
-		.onClick(lambda f: save('frame')))
+	(basicControls.addButton('save image')
+		.setPosition(20, 550)
+		.setSize(60, 35)
+		.onClick(lambda f: save('frame'))
+	)
 
-	(cp5.addButton('import data').setPosition(120, 550).setSize(100, 35)
-		.onClick(lambda f: save('import')))
+	(basicControls.addButton('import data')
+		.setPosition(85, 550)
+		.setSize(60, 35)
+		.onClick(lambda f: save('import'))
+	)
 
+	(basicControls.addButton('reset zoom')
+		.setPosition(150, 550)
+		.setSize(60, 35)
+		.onClick(lambda f: resetZoom())
+	)
 
-# If tab pressed, set focus to opposite text field
-
-def keyPressed():
-	if keyCode == 9: # Tab
-		for field in textFieldList:
-			fieldObj = cp5.get(field)
-			fieldObj.setFocus(not fieldObj.isFocus())
+	(basicControls.addToggle('toggle inches')
+		.setPosition(220, 550)
+		.setSize(20, 20)
+	)
 
 
 def draw(*args):
-	global outputMessage
-	background(loadImage(templateImg))
+	global outputMessage, zoomLevel, drawRange
+	imageSizeScaled = imageSize * zoomLevel
+	drawRange = imageSizeScaled * 0.9
 
-	text(str(outputMessage), *outputMessagePos)
+	background(backgroundColor)
 
 	if args:
 		moa = args[0]
 		distances = args[1]
 	else:
-		moa = cp5.getController('tarkov moa').getText()
-		distances = cp5.getController('distances').getText()
+		moa = basicControls.getController('tarkov moa').getText()
+		distances = basicControls.getController('distances').getText()
 
-	# MOA in game, converted to centimeters
+	# MOA in game, converted to unit
 	try:
 		accuracy = float(moa) * 2.54
 		outputMessage = ''
 	except ValueError:
 		if moa != '':
-			text('Bad MOA input', *outputMessagePos)
+			outputMessage = 'Bad MOA input'
+
+		image(
+			templateImg,
+			(imageSize - imageSizeScaled) / 2, 
+			(imageSize - imageSizeScaled) / 2,
+			imageSizeScaled,
+			imageSizeScaled
+		)
+
+		drawOutputMessage()
 		return
 
 	# List of distances to display accuracy for, defaults if bad input
@@ -85,13 +116,22 @@ def draw(*args):
 			distanceList = [0.5, 1, 2, 3, 4, 5]
 			break
 
-	yOffsetStep = float(drawRange[1] - drawRange[0]) / (len(distanceList) + 1)
+	yOffsetStep = drawRange / (len(distanceList) + 1)
+	xOffsetStart = (imageSize/2) + (imageSizeScaled/5)
 
-	# For each distance (reversed for readability)
-	for j in range(len(distanceList), 0, -1):
-		diameter = accuracy * distanceList[j - 1] * 2
+	getYOffset = lambda count: (imageSize - drawRange) / 2 + (yOffsetStep * count)
+	getDiameter = lambda count: accuracy * distanceList[count - 1] * 2 * zoomLevel
 
-		yOffset = yOffsetStep * j + drawRange[0]
+	sortedDistances = sorted(distanceList, reverse=True)
+
+	# For each distance in order of largest to smallest
+	for j in sortedDistances:
+		index = distanceList.index(j)+1
+
+		sw = 50 * zoomLevel	# Threashold for displaying yellow to red
+
+		diameter = getDiameter(index)
+		yOffset = getYOffset(index)
 
 		# Get color in spectrum between green and yellow
 		# if diameter less than threashold, else yellow and red
@@ -100,31 +140,72 @@ def draw(*args):
 		big = diameter > sw
 		fill(lerpColor(mapColors[big], mapColors[big + 1],
 			map(diameter, big * sw, big * sw + sw, 0, 1)))
-		circle(drawCenter, yOffset, diameter * (464.0 / 170.0))
+		circle(xOffsetStart, yOffset, diameter * imageScale)
+
+	image(
+		templateImg,
+		(imageSize - imageSizeScaled) / 2, 
+		(imageSize - imageSizeScaled) / 2,
+		imageSizeScaled,
+		imageSizeScaled
+	)
 
 	# Although not ideal, the second loop will overlay the text
-	# to avoid the following circle overwriting the previous text
-
+	# to avoid the circle overwriting the text
 	for k in range(len(distanceList), 0, -1):
-		diameter = accuracy * distanceList[k - 1] * 2
+		diameter = getDiameter(k)
+		yOffset = getYOffset(k)
 
-		yOffset = yOffsetStep * k + drawRange[0]
-		xOffset = drawCenter
+		xOffsetModifier = diameter * 1.5 + 40
+		if xOffsetStart + xOffsetModifier > imageSize * 0.95:
+			xOffsetModifier = -xOffsetModifier
+		xOffset = xOffsetStart + xOffsetModifier
 
-		xOffsetModifier = diameter / 2 * (464.0 / 170.0) + 10
-
-		if xOffsetModifier < xOffsetBuffer:
-			xOffset += xOffsetModifier
+		if basicControls.getController('toggle inches').getValue():
+			accuracyTextOutput = (
+				str(diameter/2.54/zoomLevel)[:6], 'IN', distanceList[k-1] * 100)
 		else:
-			xOffset += xOffsetBuffer
+			accuracyTextOutput = (
+				str(diameter/zoomLevel)[:6], 'CM', distanceList[k-1] * 100)
 
-		accuracyText = '{} CM\n@ {}m'.format(
-			str(diameter)[:6], distanceList[k - 1] * 100)
+		accuracyText = '{} {}\n@ {}m'.format(*accuracyTextOutput)
 
 		fill('#FFFFFF')
 		text(accuracyText, xOffset, yOffset)
 
+	drawOutputMessage()
+
+
+def drawOutputMessage():
+	global outputMessage, outputMessagePos
+
+	textAlign(LEFT)
 	text(str(outputMessage), *outputMessagePos)
+	textAlign(CENTER)
+
+
+# If tab pressed, set focus to opposite text field
+
+def keyPressed():
+	if keyCode == 9: # Tab
+		for field in textFieldList:
+			fieldObj = basicControls.get(field)
+			fieldObj.setFocus(not fieldObj.isFocus())
+
+
+def mouseWheel(event):
+	global zoomLevel
+	zoomRange = (0.3, 3)
+	e = event.getCount()
+	modifier = zoomLevel + float(e)/20
+
+	if 0.3 <= modifier <= 3:
+		zoomLevel = modifier
+
+
+def resetZoom():
+	global zoomLevel
+	zoomLevel = 1
 
 
 # This function is awful. selectInput is threaded so I have to wait
@@ -148,8 +229,8 @@ def save(mode):
 
 	if mode == 'frame':
 		saveCurrentFrame(
-			cp5.getController('tarkov moa').getText(),
-			cp5.getController('distances').getText(),
+			basicControls.getController('tarkov moa').getText(),
+			basicControls.getController('distances').getText(),
 			mode
 		)
 	elif mode == 'import':
@@ -180,33 +261,37 @@ def waitForPath(index):
 def saveCurrentFrame(moa, distances, mode):
 	global outputMessage
 
-	cp5.hide()
+	basicControls.hide()
 	oldOutputMessage = outputMessage
 	outputMessage = ''
 
 	if moa == '':
 		oldOutputMessage = 'No MOA entered'
 		return
-
 	if distances == '':
 		distances = '50, 100, 200, 300, 400, 500'
+
+	scalePosition = lambda positionBuffer: (
+		(imageSize - drawRange) / 2 + (positionBuffer * zoomLevel))
+
+	moaTextPosition = [140, 530]
+
+	if zoomLevel < 1:
+		moaTextPosition[1] = scalePosition(moaTextPosition[1])
+	if zoomLevel < 1.5:
+		moaTextPosition[0] = scalePosition(moaTextPosition[0])
 
 	draw(moa, distances)
 
 	textSize(25)
-	textAlign(CENTER)
-	text('{} Tarkov MOA'.format(moa), drawCenter, 70)
-
-	saveName = '{}/{} MOA @ {}.png'.format(
-		pathList[0][0], moa, distances)
-
-	saveFrame(saveName)
-
+	text('{} MOA'.format(moa), moaTextPosition[0], moaTextPosition[1])
 	textSize(12)
-	textAlign(LEFT)
+	textLeading(12)
+
+	saveFrame('{}/{} MOA @ {}.png'.format(pathList[0][0], moa, distances))
 
 	outputMessage = oldOutputMessage
-	cp5.show()
+	basicControls.show()
 
 
 # Load and process json file, render each item in json

@@ -122,27 +122,7 @@ def draw(*args):
 	getYOffset = lambda count: (imageSize - drawRange) / 2 + (yOffsetStep * count)
 	getDiameter = lambda count: accuracy * distanceList[count - 1] * 2 * zoomLevel
 
-	diameterSum = sum(distanceList) * accuracy * 2 * zoomLevel
-
 	sortedDistances = sorted(distanceList, reverse=True)
-
-
-	offset = (drawRange - diameterSum) / (len(distanceList) + 1)
-
-	print("Offset", offset)
-
-	something = (imageSize - drawRange) / 2
-	print("Sum", diameterSum)
-	print("Something", something)
-	#somethingList = [None] * (len(distanceList)-1)
-	somethingList = []
-	for x in range(0, len(distanceList)):
-		diameter = getDiameter(x)
-		something += diameter + (offset/distanceList[x])
-		print("Distance", diameter/2)
-		somethingList += [something - (diameter/2)]
-
-	print("List", somethingList)
 
 	# For each distance in order of largest to smallest
 	for j in sortedDistances:
@@ -153,8 +133,6 @@ def draw(*args):
 		diameter = getDiameter(index)
 		yOffset = getYOffset(index)
 
-		yOffset = somethingList[distanceList.index(j)]
-
 		# Get color in spectrum between green and yellow
 		# if diameter less than threashold, else yellow and red
 		# map diameter to between 0 and 1 as lerpColor takes float input
@@ -162,7 +140,7 @@ def draw(*args):
 		big = diameter > sw
 		fill(lerpColor(mapColors[big], mapColors[big + 1],
 			map(diameter, big * sw, big * sw + sw, 0, 1)))
-		circle(xOffsetStart, yOffset - (diameter/2), diameter * imageScale)
+		circle(xOffsetStart, yOffset, diameter * imageScale)
 
 	image(
 		templateImg,
